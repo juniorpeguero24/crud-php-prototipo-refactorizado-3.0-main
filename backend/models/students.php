@@ -44,6 +44,17 @@ function createStudent($conn, $fullname, $email, $age)
     ];
 }
 
+function getStudentByName($conn, $fullname) 
+{
+    $stmt = $conn->prepare("SELECT * FROM students WHERE fullname = ?");
+    $stmt->bind_param("s", $fullname);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    //fetch_assoc() devuelve un array asociativo ya listo para convertir en JSON de una fila:
+    return $result->fetch_assoc(); 
+}
+
 function updateStudent($conn, $id, $fullname, $email, $age) 
 {
     $sql = "UPDATE students SET fullname = ?, email = ?, age = ? WHERE id = ?";

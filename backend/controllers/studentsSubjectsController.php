@@ -21,6 +21,14 @@ function handlePost($conn)
 {
     $input = json_decode(file_get_contents("php://input"), true);
     
+    $exists = checkStudentSubjectExists($conn, $input['student_id'], $input['subject_id']);
+    if ($exists) 
+    {
+        http_response_code(400);
+        echo json_encode(["error" => "La asignación ya existe"]);
+        return;
+    }
+
     $result = assignSubjectToStudent($conn, $input['student_id'], $input['subject_id'], $input['approved']);
     if ($result['inserted'] > 0) 
     {

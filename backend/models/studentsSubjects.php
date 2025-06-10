@@ -9,6 +9,36 @@
 *    Iteration   : 3.0 ( prototype )
 */
 
+function checkStudentSubjectExists($conn, $student_id,$subject_id) 
+{
+    $sql = "SELECT id FROM students_subjects WHERE student_id = ? AND subject_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ii", $student_id, $subject_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    return $result->fetch_assoc();
+}
+
+function countSubjectsByStudent($conn, $student_id) 
+{
+    $sql = "SELECT COUNT(*) as count FROM students_subjects WHERE student_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $student_id);
+    $stmt->execute();
+    $result = $stmt->get_result()->fetch_assoc();
+    return $result['count'];
+}
+
+function countStudentsBySubject($conn, $subject_id) 
+{
+    $sql = "SELECT COUNT(*) as count FROM students_subjects WHERE subject_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $subject_id);
+    $stmt->execute();
+    $result = $stmt->get_result()->fetch_assoc();
+    return $result['count'];
+}
+    
 function assignSubjectToStudent($conn, $student_id, $subject_id, $approved) 
 {
     $sql = "INSERT INTO students_subjects (student_id, subject_id, approved) VALUES (?, ?, ?)";

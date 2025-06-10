@@ -10,7 +10,7 @@
 */
 
 require_once("./models/subjects.php");
-
+require_once("./models/studentsSubjects.php");
 function handleGet($conn) 
 {
     $input = json_decode(file_get_contents("php://input"), true);
@@ -30,7 +30,21 @@ function handleGet($conn)
 function handlePost($conn) 
 {
     $input = json_decode(file_get_contents("php://input"), true);
-
+    $name = trim($input['name'] );
+    if (strlen($name) < 3) 
+    {
+        http_response_code(400);
+        echo json_encode(["error" => "El nombre de la materia debe tener al menos 3 caracteres"]);
+        return;
+    }
+    $existing= getSubjectByName($conn, $input['name']);
+    if ($existing) 
+    {
+        http_response_code(400);
+        echo json_encode(["error" => "Ya existe una materia con ese nombre"]);
+        return;
+    }
+    
     $result = createSubject($conn, $input['name']);
     if ($result['inserted'] > 0) 
     {
@@ -62,7 +76,14 @@ function handlePut($conn)
 function handleDelete($conn) 
 {
     $input = json_decode(file_get_contents("php://input"), true);
-    
+    $count = countStudentsBySubject($conn, $input['id']);
+    if ($count > 0) 
+    {
+        http_response_code(400);
+        echo json_encode(["error" => "No se puede eliminar la materia porque tiene estudiantes asignados"]);
+        return;
+    }
+    // Si no hay estudiantes asignados, proceder a eliminar la materia
     $result = deleteSubject($conn, $input['id']);
     if ($result['deleted'] > 0) 
     {

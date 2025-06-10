@@ -10,7 +10,7 @@
 */
 
 require_once("./models/students.php");
-
+require_once("./models/studentsSubjects.php");
 function handleGet($conn) 
 {
     $input = json_decode(file_get_contents("php://input"), true);
@@ -30,7 +30,20 @@ function handleGet($conn)
 function handlePost($conn) 
 {
     $input = json_decode(file_get_contents("php://input"), true);
-
+    $fullname = trim($input['fullname']);
+    if (strlen($fullname) < 5 || strpos($fullname, ' ') === false) 
+    {
+        http_response_code(400);
+        echo json_encode(["error" => "El nombre completo debe tener al menos 5 caracteres y contener un espacio entre nombre y apellido"]);
+        return;
+    }
+    $exists = getStudentByName($conn, $input['fullname']);
+    if ($exists) 
+    {
+        http_response_code(400);
+        echo json_encode(["error" => "Ya existe un estudiante con ese nombre completo"]);
+        return;
+    }
     $result = createStudent($conn, $input['fullname'], $input['email'], $input['age']);
     if ($result['inserted'] > 0) 
     {
@@ -62,7 +75,13 @@ function handlePut($conn)
 function handleDelete($conn) 
 {
     $input = json_decode(file_get_contents("php://input"), true);
-
+    $count = countSubjectsByStudent($conn, $input['id']);
+    if ($count > 0) 
+    {
+        http_response_code(400);
+        echo json_encode(["error" => "No se puede eliminar, el estudiante tiene materias asignadas"]);
+        return;
+    }
     $result = deleteStudent($conn, $input['id']);
     if ($result['deleted'] > 0) 
     {
